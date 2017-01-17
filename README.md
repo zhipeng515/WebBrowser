@@ -11,3 +11,8 @@
 
 
   webBrowser_.CallJScript(_T("TestFunc"), _T("1"), _T("2"));
+```
+
+主要代码来自
+
+* https://github.com/ietab/ietab.git
