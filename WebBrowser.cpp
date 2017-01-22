@@ -247,7 +247,7 @@ void CWebBrowser::OnWindowClosing(VARIANT_BOOL /*IsChildWindow*/, VARIANT_BOOL *
 
 	if (m_pDelegate) {
 		bool cancel = false;
-		m_pDelegate->OnWindowClosing(&cancel);
+		m_pDelegate->OnBrowserWindowClosing(&cancel);
 		*Cancel = cancel ? VARIANT_TRUE : VARIANT_FALSE;
 	}
 }
@@ -273,7 +273,7 @@ void CWebBrowser::OnFinalMessage(HWND /*hwnd*/) {
 // WindowProc for innermost Internet_Explorer_Server window.
 LRESULT CWebBrowser::HandleInnerWndProc(UINT message, WPARAM wparam, LPARAM lparam) {
 	if (m_pDelegate) {
-		if (m_pDelegate->OnWindowMessage(message, wparam, lparam))
+		if (m_pDelegate->OnBrowserWindowMessage(message, wparam, lparam))
 			return 0;
 	}
 	return CallWindowProc(m_OldInnerWndProc, m_hInnerWnd, message, wparam, lparam);

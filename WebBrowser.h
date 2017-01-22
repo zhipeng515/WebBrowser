@@ -37,8 +37,8 @@ public:
 	virtual void OnTitleChange(const wchar_t* /*title*/) {}
 	virtual void OnSetStatusText(const wchar_t* /*text*/) {}
 	virtual void OnCommandStatusChange(bool /*cangoback*/, bool /*cangofwd*/) {}
-	virtual void OnWindowClosing(bool* /*pCancel*/) {}
-	virtual bool OnWindowMessage(UINT /*message*/, WPARAM /*wparam*/, LPARAM /*lparam*/) { return false; }
+	virtual void OnBrowserWindowClosing(bool* /*pCancel*/) {}
+	virtual bool OnBrowserWindowMessage(UINT /*message*/, WPARAM /*wparam*/, LPARAM /*lparam*/) { return false; }
 };
 
 class /* ATL_NO_VTABLE */ CWebBrowser:
