@@ -80,6 +80,9 @@ public:
 		LCID /*lcid*/,
 		_Out_ DISPID* rgdispid)
 	{
+		_CRT_UNUSED(cNames);
+		_CRT_UNUSED(rgdispid);
+		_CRT_UNUSED(rgszNames);
 		if (cNames == 0 || rgszNames == NULL || rgszNames[0] == NULL || rgdispid == NULL)
 			return E_INVALIDARG;
 		auto func = m_functionIdMaps.Lookup(rgszNames[0]);
@@ -88,8 +91,8 @@ public:
 			*rgdispid = func->m_value;
 			return S_OK;
 		}
-
-		return E_NOTIMPL;
+		*rgdispid = -1;
+		return DISP_E_UNKNOWNNAME;
 	}
 	STDMETHOD(Invoke)(
 		_In_ DISPID dispidMember,
@@ -101,6 +104,9 @@ public:
 		_Out_opt_ EXCEPINFO* /*pexcepinfo*/,
 		_Out_opt_ UINT* /*puArgErr*/)
 	{
+		_CRT_UNUSED(dispidMember);
+		_CRT_UNUSED(pdispparams);
+		_CRT_UNUSED(pvarResult);
 		if (dispidMember >= DISPID_BASE && dispidMember < DISPID_BASE + (DISPID)m_exportFunctions.size())
 		{
 			int funcIndex = dispidMember - DISPID_BASE;

@@ -24,6 +24,74 @@
 #include <atlhost.h>
 #include "JavaScriptFunction.h"
 
+// These constants are not defined cause we set _WIN32_IE to
+// _WIN32_IE_IE60SP2, so that IE7 and later features are not
+// available in our code, so that backward compatibility is fine.
+// But still, we only use this constants features for security
+// manager, and that does not make any functionality broken.
+
+#ifndef URLACTION_LOOSE_XAML
+#define URLACTION_LOOSE_XAML						0x00002402
+#endif // !URLACTION_LOOSE_XAML
+#ifndef URLACTION_MANAGED_SIGNED
+#define URLACTION_MANAGED_SIGNED					0x00002001
+#endif // !URLACTION_MANAGED_SIGNED
+#ifndef URLACTION_MANAGED_UNSIGNED
+#define URLACTION_MANAGED_UNSIGNED					0x00002004
+#endif // !URLACTION_MANAGED_UNSIGNED
+#ifndef URLACTION_WINDOWS_BROWSER_APPLICATIONS
+#define URLACTION_WINDOWS_BROWSER_APPLICATIONS		0x00002400
+#endif // !URLACTION_WINDOWS_BROWSER_APPLICATIONS
+#ifndef URLACTION_WINFX_SETUP
+#define URLACTION_WINFX_SETUP						0x00002600
+#endif // !URLACTION_WINFX_SETUP
+#ifndef URLACTION_XPS_DOCUMENTS
+#define URLACTION_XPS_DOCUMENTS						0x00002401
+#endif // !URLACTION_XPS_DOCUMENTS
+#ifndef URLACTION_ALLOW_AUDIO_VIDEO
+#define URLACTION_ALLOW_AUDIO_VIDEO					0x00002701
+#endif // !URLACTION_ALLOW_AUDIO_VIDEO
+#ifndef URLACTION_ALLOW_STRUCTURED_STORAGE_SNIFFING
+#define URLACTION_ALLOW_STRUCTURED_STORAGE_SNIFFING	0x00002703
+#endif // !URLACTION_ALLOW_STRUCTURED_STORAGE_SNIFFING
+#ifndef URLACTION_ALLOW_XDOMAIN_SUBFRAME_RESIZE
+#define URLACTION_ALLOW_XDOMAIN_SUBFRAME_RESIZE		0x00001408
+#endif // !URLACTION_ALLOW_XDOMAIN_SUBFRAME_RESIZE
+#ifndef URLACTION_FEATURE_CROSSDOMAIN_FOCUS_CHANGE
+#define URLACTION_FEATURE_CROSSDOMAIN_FOCUS_CHANGE	0x00002107
+#endif // !URLACTION_FEATURE_CROSSDOMAIN_FOCUS_CHANGE
+#ifndef URLACTION_SHELL_PREVIEW
+#define URLACTION_SHELL_PREVIEW						0x0000180F
+#endif // !URLACTION_SHELL_PREVIEW
+#ifndef URLACTION_SHELL_REMOTEQUERY
+#define URLACTION_SHELL_REMOTEQUERY					0x0000180E
+#endif // !URLACTION_SHELL_REMOTEQUERY
+#ifndef URLACTION_SHELL_SECURE_DRAGSOURCE
+#define URLACTION_SHELL_SECURE_DRAGSOURCE			0x0000180D
+#endif // !URLACTION_SHELL_SECURE_DRAGSOURCE
+#ifndef URLACTION_ALLOW_APEVALUATION
+#define URLACTION_ALLOW_APEVALUATION				0x00002301
+#endif // !URLACTION_ALLOW_APEVALUATION
+#ifndef URLACTION_LOWRIGHTS
+#define URLACTION_LOWRIGHTS							0x00002500
+#endif // !URLACTION_LOWRIGHTS
+#ifndef URLACTION_ALLOW_ACTIVEX_FILTERING
+#define URLACTION_ALLOW_ACTIVEX_FILTERING			0x00002702
+#endif // !URLACTION_ALLOW_ACTIVEX_FILTERING
+#ifndef URLACTION_DOTNET_USERCONTROLS
+#define URLACTION_DOTNET_USERCONTROLS				0x00002005
+#endif // !URLACTION_DOTNET_USERCONTROLS
+#ifndef URLACTION_FEATURE_DATA_BINDING
+#define URLACTION_FEATURE_DATA_BINDING              0x00002106
+#endif // !URLACTION_FEATURE_DATA_BINDING
+#ifndef URLACTION_FEATURE_CROSSDOMAIN_FOCUS_CHANGE
+#define URLACTION_FEATURE_CROSSDOMAIN_FOCUS_CHANGE  0x00002107
+#endif // !URLACTION_FEATURE_CROSSDOMAIN_FOCUS_CHANGE
+#ifndef URLACTION_SCRIPT_XSSFILTER
+#define URLACTION_SCRIPT_XSSFILTER                  0x00001409
+#endif // !URLACTION_SCRIPT_XSSFILTER
+
+
 class ATL_NO_VTABLE CWebBrowserHost :
 	//public CComCoClass<CWebBrowserHost , &CLSID_NULL>,
 	public CAxHostWindow,
@@ -84,8 +152,8 @@ public:
 		// return E_NOTIMPL;
 	}
 
-	STDMETHOD(ShowContextMenu)(DWORD dwID, POINT FAR* ppt, IUnknown* pcmdTarget, IDispatch* pdispObject) {
-		return CAxHostWindow::ShowContextMenu(dwID, ppt, pcmdTarget, pdispObject);
+	STDMETHOD(ShowContextMenu)(DWORD /*dwID*/, POINT FAR* /*ppt*/, IUnknown* /*pcmdTarget*/, IDispatch* /*pdispObject*/) {
+		return S_OK;// CAxHostWindow::ShowContextMenu(dwID, ppt, pcmdTarget, pdispObject);
 	}
 
 	STDMETHOD(ShowUI)(DWORD /*dwID*/, IOleInPlaceActiveObject FAR* /*pActiveObject*/,
@@ -155,51 +223,179 @@ public:
 	}
 
 	// IInternetSecurityManager
-	virtual HRESULT STDMETHODCALLTYPE SetSecuritySite(
+	STDMETHOD(SetSecuritySite)(
 		/* [unique][in] */ __RPC__in_opt IInternetSecurityMgrSite * /*pSite*/) {
 		return INET_E_DEFAULT_ACTION;
 	}
 
-	virtual HRESULT STDMETHODCALLTYPE GetSecuritySite(
+	STDMETHOD(GetSecuritySite)(
 		/* [out] */ __RPC__deref_out_opt IInternetSecurityMgrSite ** /*ppSite*/) {
 		return INET_E_DEFAULT_ACTION;
 	};
 
-	virtual HRESULT STDMETHODCALLTYPE MapUrlToZone(
-		/* [in] */ __RPC__in LPCWSTR /*pwszUrl*/,
-		/* [out] */ __RPC__out DWORD * /*pdwZone*/,
+	STDMETHOD(MapUrlToZone)(
+		/* [in] */ __RPC__in LPCWSTR pwszUrl,
+		/* [out] */ __RPC__out DWORD * pdwZone,
 		/* [in] */ DWORD /*dwFlags*/) {
-		return INET_E_DEFAULT_ACTION;
+		_CRT_UNUSED(pwszUrl);
+		*pdwZone = 0;
+		return S_OK;
 	};
 
-	virtual HRESULT STDMETHODCALLTYPE GetSecurityId(
-		/* [in] */ __RPC__in LPCWSTR /*pwszUrl*/,
-		/* [size_is][out] */ __RPC__out_ecount_full(*pcbSecurityId) BYTE * /*pbSecurityId*/,
-		/* [out][in] */ __RPC__inout DWORD * /*pcbSecurityId*/,
+	STDMETHOD(GetSecurityId)(
+		/* [in] */ __RPC__in LPCWSTR pwszUrl,
+		/* [size_is][out] */ __RPC__out_ecount_full(*pcbSecurityId) BYTE * pbSecurityId,
+		/* [out][in] */ __RPC__inout DWORD * pcbSecurityId,
 		/* [in] */ DWORD_PTR /*dwReserved*/) {
-		return INET_E_DEFAULT_ACTION;
+		_CRT_UNUSED(pwszUrl);
+#define MY_SECURITY_DOMAIN "file:"
+		int cbSecurityDomain = strlen(MY_SECURITY_DOMAIN);
+		if (*pcbSecurityId >= MAX_SIZE_SECURITY_ID) {
+
+			memset(pbSecurityId, 0, *pcbSecurityId);
+#pragma warning(disable:4996)
+			strcpy((char*)pbSecurityId, MY_SECURITY_DOMAIN);
+#pragma warning(default:4996)
+
+			// Last 4 bytes are <URLZONE> and then 3 zeros.
+			pbSecurityId[cbSecurityDomain + 1] = URLZONE_LOCAL_MACHINE; // ==0
+			pbSecurityId[cbSecurityDomain + 2] = 0;
+			pbSecurityId[cbSecurityDomain + 3] = 0;
+			pbSecurityId[cbSecurityDomain + 4] = 0;
+
+			*pcbSecurityId = (DWORD)cbSecurityDomain + 4; // plus the 4 bytes from above.
+		}
+
+		return S_OK;
+//		return INET_E_DEFAULT_ACTION;
 	};
 
-	virtual HRESULT STDMETHODCALLTYPE ProcessUrlAction(
+	STDMETHOD(ProcessUrlAction)(
 		/* [in] */ __RPC__in LPCWSTR /*pwszUrl*/,
-		/* [in] */ DWORD /*dwAction*/,
+		/* [in] */ DWORD dwAction,
 		/* [size_is][out] */ __RPC__out_ecount_full(cbPolicy) BYTE * pPolicy,
-		/* [in] */ DWORD cbPolicy,
+		/* [in] */ DWORD /*cbPolicy*/,
 		/* [unique][in] */ __RPC__in_opt BYTE * /*pContext*/,
 		/* [in] */ DWORD /*cbContext*/,
 		/* [in] */ DWORD /*dwFlags*/,
 		/* [in] */ DWORD /*dwReserved*/) {
-		DWORD dwPolicy = URLPOLICY_ALLOW;
-		if (cbPolicy >= sizeof(DWORD))
-		{
-			*(DWORD*)pPolicy = dwPolicy;
+
+		// You can't set all actions to ALLOW, as it sometimes works the other way,
+		// an ALLOW could set restrictions we don't want to. We have to check and set
+		// each flag separately.
+
+		// URLACTION flags: http://msdn.microsoft.com/en-us/library/ms537178(VS.85).aspx
+		// Default settings: http://msdn.microsoft.com/en-us/library/ms537186(VS.85).aspx
+		// URLPOLICY flags: http://msdn.microsoft.com/en-us/library/ms537179(VS.85).aspx
+
+		// Not implemented because of different reasons:
+		// URLACTION_ACTIVEX_OVERRIDE_DOMAINLIST // ie9, not sure what this does
+		// URLACTION_INPRIVATE_BLOCKING // no idea
+
+		switch (dwAction) {
+		case URLACTION_ACTIVEX_CONFIRM_NOOBJECTSAFETY:
+		case URLACTION_ACTIVEX_OVERRIDE_DATA_SAFETY:
+		case URLACTION_ACTIVEX_OVERRIDE_SCRIPT_SAFETY:
+		case URLACTION_FEATURE_BLOCK_INPUT_PROMPTS:
+		case URLACTION_SCRIPT_OVERRIDE_SAFETY:
+		case URLACTION_SHELL_EXTENSIONSECURITY:
+		case URLACTION_ACTIVEX_NO_WEBOC_SCRIPT:
+		case URLACTION_ACTIVEX_OVERRIDE_OBJECT_SAFETY:
+		case URLACTION_ACTIVEX_OVERRIDE_OPTIN:
+		case URLACTION_ACTIVEX_OVERRIDE_REPURPOSEDETECTION:
+		case URLACTION_ACTIVEX_RUN:
+		case URLACTION_ACTIVEX_SCRIPTLET_RUN:
+		case URLACTION_ACTIVEX_DYNSRC_VIDEO_AND_ANIMATION:
+		case URLACTION_ALLOW_RESTRICTEDPROTOCOLS:
+		case URLACTION_AUTOMATIC_ACTIVEX_UI:
+		case URLACTION_AUTOMATIC_DOWNLOAD_UI:
+		case URLACTION_BEHAVIOR_RUN:
+		case URLACTION_CLIENT_CERT_PROMPT:
+		case URLACTION_COOKIES:
+		case URLACTION_COOKIES_ENABLED:
+		case URLACTION_COOKIES_SESSION:
+		case URLACTION_COOKIES_SESSION_THIRD_PARTY:
+		case URLACTION_COOKIES_THIRD_PARTY:
+		case URLACTION_CROSS_DOMAIN_DATA:
+		case URLACTION_DOWNLOAD_SIGNED_ACTIVEX:
+		case URLACTION_DOWNLOAD_UNSIGNED_ACTIVEX:
+		case URLACTION_FEATURE_DATA_BINDING:
+		case URLACTION_FEATURE_FORCE_ADDR_AND_STATUS:
+		case URLACTION_FEATURE_MIME_SNIFFING:
+		case URLACTION_FEATURE_SCRIPT_STATUS_BAR:
+		case URLACTION_FEATURE_WINDOW_RESTRICTIONS:
+		case URLACTION_FEATURE_ZONE_ELEVATION:
+		case URLACTION_HTML_FONT_DOWNLOAD:
+		case URLACTION_HTML_INCLUDE_FILE_PATH:
+		case URLACTION_HTML_JAVA_RUN:
+		case URLACTION_HTML_META_REFRESH:
+		case URLACTION_HTML_MIXED_CONTENT:
+		case URLACTION_HTML_SUBFRAME_NAVIGATE:
+		case URLACTION_HTML_SUBMIT_FORMS:
+		case URLACTION_HTML_SUBMIT_FORMS_FROM:
+		case URLACTION_HTML_SUBMIT_FORMS_TO:
+		case URLACTION_HTML_USERDATA_SAVE:
+		case URLACTION_LOOSE_XAML:
+		case URLACTION_MANAGED_SIGNED:
+		case URLACTION_MANAGED_UNSIGNED:
+		case URLACTION_SCRIPT_JAVA_USE:
+		case URLACTION_SCRIPT_PASTE:
+		case URLACTION_SCRIPT_RUN:
+		case URLACTION_SCRIPT_SAFE_ACTIVEX:
+		case URLACTION_SHELL_EXECUTE_HIGHRISK:
+		case URLACTION_SHELL_EXECUTE_LOWRISK:
+		case URLACTION_SHELL_EXECUTE_MODRISK:
+		case URLACTION_SHELL_FILE_DOWNLOAD:
+		case URLACTION_SHELL_INSTALL_DTITEMS:
+		case URLACTION_SHELL_MOVE_OR_COPY:
+		case URLACTION_SHELL_VERB:
+		case URLACTION_SHELL_WEBVIEW_VERB:
+		case URLACTION_WINDOWS_BROWSER_APPLICATIONS:
+		case URLACTION_WINFX_SETUP:
+		case URLACTION_XPS_DOCUMENTS:
+		case URLACTION_ALLOW_AUDIO_VIDEO: // ie9
+		case URLACTION_ALLOW_STRUCTURED_STORAGE_SNIFFING: // ie9
+		case URLACTION_ALLOW_XDOMAIN_SUBFRAME_RESIZE: // ie7
+		case URLACTION_FEATURE_CROSSDOMAIN_FOCUS_CHANGE: // ie7
+		case URLACTION_SHELL_ENHANCED_DRAGDROP_SECURITY:
+		case URLACTION_SHELL_PREVIEW: // win7
+		case URLACTION_SHELL_REMOTEQUERY: // win7
+		case URLACTION_SHELL_RTF_OBJECTS_LOAD: // ie6sp2
+		case URLACTION_SHELL_SECURE_DRAGSOURCE: // ie7
+		// case URLACTION_SHELL_SHELLEXECUTE: // ie6sp2, value the same as URLACTION_SHELL_EXECUTE_HIGHRISK
+		case URLACTION_DOTNET_USERCONTROLS: // ie8, probably registry only
+			*pPolicy = URLPOLICY_ALLOW;
 			return S_OK;
+
+		case URLACTION_CHANNEL_SOFTDIST_PERMISSIONS:
+			//*pPolicy = URLPOLICY_CHANNEL_SOFTDIST_AUTOINSTALL;
+			*pPolicy = URLPOLICY_ALLOW;
+			return S_OK;
+
+		case URLACTION_JAVA_PERMISSIONS:
+			//*pPolicy = URLPOLICY_JAVA_LOW;
+			*pPolicy = URLPOLICY_ALLOW;
+			return S_OK;
+
+		case URLACTION_CREDENTIALS_USE:
+			//*pPolicy = URLPOLICY_CREDENTIALS_SILENT_LOGON_OK;
+			*pPolicy = URLPOLICY_ALLOW;
+			return S_OK;
+
+		case URLACTION_ALLOW_APEVALUATION: // Phishing filter.
+		case URLACTION_LOWRIGHTS: // Vista Protected Mode.
+		case URLACTION_SHELL_POPUPMGR:
+		case URLACTION_SCRIPT_XSSFILTER:
+		case URLACTION_ACTIVEX_TREATASUNTRUSTED:
+		case URLACTION_ALLOW_ACTIVEX_FILTERING: // ie9
+			*pPolicy = URLPOLICY_DISALLOW;
+			return S_FALSE;
 		}
 
 		return INET_E_DEFAULT_ACTION;
 	};
 
-	virtual HRESULT STDMETHODCALLTYPE QueryCustomPolicy(
+	STDMETHOD(QueryCustomPolicy)(
 		/* [in] */ __RPC__in LPCWSTR /*pwszUrl*/,
 		/* [in] */ __RPC__in REFGUID /*guidKey*/,
 		/* [size_is][size_is][out] */ __RPC__deref_out_ecount_full_opt(*pcbPolicy) BYTE ** /*ppPolicy*/,
@@ -210,18 +406,18 @@ public:
 		return INET_E_DEFAULT_ACTION;
 	};
 
-	virtual HRESULT STDMETHODCALLTYPE SetZoneMapping(
+	STDMETHOD(SetZoneMapping)(
 		/* [in] */ DWORD /*dwZone*/,
 		/* [in] */ __RPC__in LPCWSTR /*lpszPattern*/,
 		/* [in] */ DWORD /*dwFlags*/) {
-		return INET_E_DEFAULT_ACTION;
+		return E_NOTIMPL;
 	};
 
-	virtual HRESULT STDMETHODCALLTYPE GetZoneMappings(
+	STDMETHOD(GetZoneMappings)(
 		/* [in] */ DWORD /*dwZone*/,
 		/* [out] */ __RPC__deref_out_opt IEnumString ** /*ppenumString*/,
 		/* [in] */ DWORD /*dwFlags*/) {
-		return INET_E_DEFAULT_ACTION;
+		return E_NOTIMPL;
 	};
 
 	// IJavaScriptFunction

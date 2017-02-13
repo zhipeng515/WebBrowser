@@ -125,8 +125,8 @@ LRESULT CWebBrowser::OnCreate(UINT uMsg, WPARAM wParam , LPARAM lParam, BOOL& bH
 		pUnk->Release();
 
 		m_pInPlaceActiveObject = m_pIWebBrowser2; // store the IOleInPlaceActiveObject iface for future use
-		m_pIWebBrowser2->put_RegisterAsBrowser(VARIANT_TRUE);
-		m_pIWebBrowser2->put_RegisterAsDropTarget(VARIANT_TRUE);
+		m_pIWebBrowser2->put_RegisterAsBrowser(VARIANT_FALSE);
+		m_pIWebBrowser2->put_RegisterAsDropTarget(VARIANT_FALSE);
 	}
 
 	++browserCount;
@@ -265,6 +265,16 @@ void CWebBrowser::OnCommandStateChange(long Command, VARIANT_BOOL Enable) {
 		m_pDelegate->OnCommandStatusChange(m_CanBack, m_CanForward);
 	}
 }
+
+void CWebBrowser::OnRedirectXDomainBlocked(IDispatch *pDisp, VARIANT *StartUrl, VARIANT *RedirectUrl, VARIANT *Frame, VARIANT *StatusCode)
+{
+	_CRT_UNUSED(pDisp);
+	_CRT_UNUSED(StatusCode);
+	if (m_pDelegate) {
+		m_pDelegate->OnRedirectXDomainBlocked(StartUrl->bstrVal, RedirectUrl->bstrVal, Frame->bstrVal);
+	}
+}
+
 
 void CWebBrowser::OnFinalMessage(HWND /*hwnd*/) {
 	/* cleanup when the window is destroyed */

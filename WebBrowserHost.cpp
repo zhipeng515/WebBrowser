@@ -33,12 +33,15 @@ CWebBrowserHost::~CWebBrowserHost(void) {
 
 // IDocHostUIHandler
 STDMETHODIMP CWebBrowserHost::GetHostInfo(DOCHOSTUIINFO FAR* pInfo) {
+
 	if(pInfo != NULL) {
 		pInfo->dwFlags = DOCHOSTUIFLAG_NO3DBORDER
-			|DOCHOSTUIFLAG_THEME
-			|DOCHOSTUIFLAG_ENABLE_FORMS_AUTOCOMPLETE
-			|DOCHOSTUIFLAG_LOCAL_MACHINE_ACCESS_CHECK
-			|DOCHOSTUIFLAG_ENABLE_INPLACE_NAVIGATION;
+			| DOCHOSTUIFLAG_SCROLL_NO
+			| DOCHOSTUIFLAG_THEME
+			| DOCHOSTUIFLAG_ENABLE_FORMS_AUTOCOMPLETE
+			| DOCHOSTUIFLAG_LOCAL_MACHINE_ACCESS_CHECK
+			| DOCHOSTUIFLAG_ENABLE_REDIRECT_NOTIFICATION
+			| DOCHOSTUIFLAG_ENABLE_INPLACE_NAVIGATION;
 		pInfo->dwDoubleClick = DOCHOSTUIDBLCLK_DEFAULT;
 	}
 	return S_OK;
@@ -58,17 +61,68 @@ STDMETHODIMP CWebBrowserHost::Exec(
 	/* [unique][in] */ const GUID *pguidCmdGroup,
 	/* [in] */ DWORD nCmdID,
 	/* [in] */ DWORD /*nCmdexecopt*/,
-	/* [unique][in] */ VARIANT * /*pvaIn*/,
+	/* [unique][in] */ VARIANT * pvaIn,
 	/* [unique][out][in] */ VARIANT * pvaOut) {
-
 	HRESULT hr = pguidCmdGroup ? OLECMDERR_E_UNKNOWNGROUP : OLECMDERR_E_NOTSUPPORTED;
 	if(pguidCmdGroup && IsEqualGUID(*pguidCmdGroup, CGID_DocHostCommandHandler)) {
 		if(nCmdID == OLECMDID_SHOWSCRIPTERROR) {
 			hr = S_OK;
-			// http://support.microsoft.com/default.aspx?scid=kb;en-us;261003
+			IHTMLDocument2*             pDoc = NULL;
+			IHTMLWindow2*               pWindow = NULL;
+			IHTMLEventObj*              pEventObj = NULL;
+			BSTR                        rgwszNames[5] =
+			{
+				SysAllocString(L"errorLine"),
+				SysAllocString(L"errorCharacter"),
+				SysAllocString(L"errorCode"),
+				SysAllocString(L"errorMessage"),
+				SysAllocString(L"errorUrl")
+			};
+			DISPID                      rgDispIDs[5];
+			VARIANT                     rgvaEventInfo[5];
+			DISPPARAMS                  params;
+			BOOL                        fContinueRunningScripts = true;
+			int                         i;
+
+			params.cArgs = 0;
+			params.cNamedArgs = 0;
+
+			// Get the document that is currently being viewed.
+			hr = pvaIn->punkVal->QueryInterface(IID_IHTMLDocument2, (void **)&pDoc);
+			// Get document.parentWindow.
+			hr = pDoc->get_parentWindow(&pWindow);
+			pDoc->Release();
+			// Get the window.event object.
+			hr = pWindow->get_event(&pEventObj);
+			// Get the error info from the window.event object.
+			for (i = 0; i < 5; i++)
+			{
+				// Get the property's dispID.
+				hr = pEventObj->GetIDsOfNames(IID_NULL, &rgwszNames[i], 1,
+					LOCALE_SYSTEM_DEFAULT, &rgDispIDs[i]);
+				// Get the value of the property.
+				hr = pEventObj->Invoke(rgDispIDs[i], IID_NULL,
+					LOCALE_SYSTEM_DEFAULT,
+					DISPATCH_PROPERTYGET, &params, &rgvaEventInfo[i],
+					NULL, NULL);
+				SysFreeString(rgwszNames[i]);
+			}
+
+			// At this point, you would normally alert the user with 
+			// the information about the error, which is now contained
+			// in rgvaEventInfo[]. Or, you could just exit silently.
+
 			(*pvaOut).vt = VT_BOOL;
-			// Continue running scripts on the page.
-			(*pvaOut).boolVal = VARIANT_TRUE;
+			if (fContinueRunningScripts)
+			{
+				// Continue running scripts on the page.
+				(*pvaOut).boolVal = VARIANT_TRUE;
+			}
+			else
+			{
+				// Stop running scripts on the page.
+				(*pvaOut).boolVal = VARIANT_FALSE;
+			}
 		}
 	}
 	return hr;

@@ -39,6 +39,8 @@ public:
 	virtual void OnCommandStatusChange(bool /*cangoback*/, bool /*cangofwd*/) {}
 	virtual void OnBrowserWindowClosing(bool* /*pCancel*/) {}
 	virtual bool OnBrowserWindowMessage(UINT /*message*/, WPARAM /*wparam*/, LPARAM /*lparam*/) { return false; }
+	virtual void OnRedirectXDomainBlocked(const wchar_t* /*startUrl*/, const wchar_t* /*redirectUrl*/, const wchar_t* /*frame*/) {}
+
 };
 
 class /* ATL_NO_VTABLE */ CWebBrowser:
@@ -102,6 +104,7 @@ private:
 		SINK_ENTRY(_nDispatchID, DISPID_TITLECHANGE, OnTitleChange)
 		SINK_ENTRY(_nDispatchID, DISPID_WINDOWCLOSING, OnWindowClosing)
 		SINK_ENTRY(_nDispatchID, DISPID_COMMANDSTATECHANGE, OnCommandStateChange)
+		SINK_ENTRY(_nDispatchID, DISPID_REDIRECTXDOMAINBLOCKED, OnRedirectXDomainBlocked)
 	END_SINK_MAP()
 
 	void __stdcall OnNewWindow3(IDispatch **ppDisp, VARIANT_BOOL *Cancel, long flags, BSTR bstrUrlContext, BSTR bstrUrl);
@@ -112,6 +115,8 @@ private:
 	void __stdcall OnTitleChange(BSTR Text);
 	void __stdcall OnWindowClosing(VARIANT_BOOL IsChildWindow, VARIANT_BOOL *Cancel);
 	void __stdcall OnCommandStateChange(long Command, VARIANT_BOOL Enable);
+	void __stdcall OnRedirectXDomainBlocked(IDispatch *pDisp, VARIANT *StartUrl, VARIANT *RedirectUrl, VARIANT *Frame, VARIANT *StatusCode);
+	
 
 	bool Navigate(LPCTSTR lpstrURL, int nFlag = 0, LPCTSTR pTargetName = 0, LPCTSTR pPostData = 0, LPCTSTR pHeader = 0)
 	{
