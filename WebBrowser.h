@@ -77,6 +77,31 @@ public:
 		m_pDelegate = pDelegate;
 	}
 
+	HWND GetActiveXWnd()
+	{
+		ATLASSERT(::IsWindow(m_hWnd));
+
+		HWND hActiveXWnd = NULL;
+		HWND hIEControlWnd = NULL;
+		HWND hShellhWnd = ::FindWindowEx(m_hWnd, NULL, _T("Shell Embedding"), NULL);
+		if (hShellhWnd)
+		{
+			hShellhWnd = ::FindWindowEx(hShellhWnd, NULL, _T("Shell DocObject View"), NULL);
+			if (hShellhWnd)
+			{
+				hIEControlWnd = ::FindWindowEx(hShellhWnd, NULL, _T("Internet Explorer_Server"), NULL);
+				if (hIEControlWnd)
+				{
+					hActiveXWnd = GetBottomChildWnd(hIEControlWnd);
+					if (hActiveXWnd == hIEControlWnd)
+						hActiveXWnd = NULL;
+				}
+			}
+		}
+		return hActiveXWnd;
+	}
+
+
 private:
 	BEGIN_MSG_MAP(CWebBrowser)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
@@ -117,6 +142,18 @@ private:
 	void __stdcall OnCommandStateChange(long Command, VARIANT_BOOL Enable);
 	void __stdcall OnRedirectXDomainBlocked(IDispatch *pDisp, VARIANT *StartUrl, VARIANT *RedirectUrl, VARIANT *Frame, VARIANT *StatusCode);
 	
+	HWND GetBottomChildWnd(HWND hParentWnd)
+	{
+		HWND hRetWindow = hParentWnd;
+		HWND hWndChild = ::GetWindow(hRetWindow, GW_CHILD);
+		while (hWndChild != NULL)
+		{
+			hRetWindow = hWndChild;
+			hWndChild = ::GetWindow(hRetWindow, GW_CHILD);
+		}
+
+		return hRetWindow;
+	}
 
 	bool Navigate(LPCTSTR lpstrURL, int nFlag = 0, LPCTSTR pTargetName = 0, LPCTSTR pPostData = 0, LPCTSTR pHeader = 0)
 	{
